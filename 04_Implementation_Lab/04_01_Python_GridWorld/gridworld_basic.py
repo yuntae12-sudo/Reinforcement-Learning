@@ -16,19 +16,23 @@ print("Goal Position:", goal_position)
 # 2 = LEFT
 # 3 = RIGHT
 
-action = 3
+action = 1
 
 if action == 0:
-    agent_position[1] -= 1
+    if agent_position[1] > 0:
+        agent_position[1] -= 1
 
 elif action == 1:
-    agent_position[1] += 1
+    if agent_position[1] < 3:
+        agent_position[1] += 1
 
 elif action == 2:
-    agent_position[0] -= 1
+    if agent_position[0] > 0:
+        agent_position[0] -= 1
 
 elif action == 3:
-    agent_position[0] += 1
+    if agent_position[0] < 3:
+        agent_position[0] += 1
 
 print("Action:", action)
 print("Next Position:", agent_position)
