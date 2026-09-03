@@ -1265,3 +1265,315 @@ Next State / Reward / done
 ```
 
 이를 통해 처음으로 Agent와 Environment의 역할을 분리하기 시작한다.
+
+## Random Agent
+
+이번 단계에서는 사람이 Action sequence를 미리 정의하지 않고, Agent가 매 Step마다 Action을 무작위로 선택하도록 변경한다.
+
+기존에는 다음과 같이 Action을 직접 정의했다.
+
+```python
+actions = [3, 3, 3, 1, 1, 1]
+```
+
+이 방식은 사람이 경로를 미리 정해주는 것이므로 Agent가 실제로 행동을 선택한다고 보기 어렵다.
+
+이번 단계부터는 다음과 같이 Action을 무작위로 선택한다.
+
+```python
+action = random.randint(0, 3)
+```
+
+---
+
+## import random
+
+Python의 `random` 모듈을 사용하기 위해 파일 맨 위에 다음 코드를 추가한다.
+
+```python
+import random
+```
+
+`import`는 Python에 이미 만들어져 있는 기능을 현재 코드에서 사용할 수 있도록 불러오는 문법이다.
+
+---
+
+## Random Action Selection
+
+현재 Action Space는 다음과 같다.
+
+```text
+0 = UP
+1 = DOWN
+2 = LEFT
+3 = RIGHT
+```
+
+다음 코드는 `0`, `1`, `2`, `3` 중 하나를 무작위로 선택한다.
+
+```python
+action = random.randint(0, 3)
+```
+
+따라서 매 Step마다 선택되는 Action이 달라질 수 있다.
+
+예:
+
+```text
+Step 0 → RIGHT
+Step 1 → DOWN
+Step 2 → LEFT
+Step 3 → UP
+...
+```
+
+프로그램을 다시 실행하면 다른 Action sequence가 생성될 수 있다.
+
+---
+
+## Random Policy
+
+현재 Agent의 Policy는 매우 단순하다.
+
+```text
+현재 State와 관계없이
+모든 Action 중 하나를 무작위로 선택
+```
+
+즉:
+
+```text
+State
+  ↓
+Random Policy
+  ↓
+Action
+```
+
+구조이다.
+
+아직 Agent는 어떤 Action이 좋은지 학습하지 않는다.
+
+현재 단계의 목적은 Environment와 상호작용할 수 있는 가장 단순한 Agent를 만드는 것이다.
+
+---
+
+## Maximum Step
+
+Random Agent는 Goal과 관계없이 행동하기 때문에 Goal에 도착하지 못하고 계속 움직일 가능성이 있다.
+
+따라서 Episode가 무한히 반복되는 것을 방지하기 위해 최대 Step 수를 설정한다.
+
+```python
+max_steps = 50
+```
+
+반복문의 조건도 다음과 같이 변경한다.
+
+```python
+while not done and step < max_steps:
+```
+
+이 조건은 다음 두 가지가 모두 만족되는 동안 반복한다는 의미이다.
+
+```text
+done == False
+AND
+step < max_steps
+```
+
+---
+
+## and
+
+Python의 `and`는 두 조건이 모두 `True`일 때 전체 조건을 `True`로 만든다.
+
+```python
+while not done and step < max_steps:
+```
+
+예를 들어:
+
+```text
+done = False
+step = 10
+max_steps = 50
+```
+
+이라면:
+
+```text
+not done
+→ True
+
+step < max_steps
+→ 10 < 50
+→ True
+```
+
+두 조건이 모두 True이므로 반복문을 계속 실행한다.
+
+---
+
+## Episode Termination
+
+현재 Episode가 끝나는 조건은 두 가지이다.
+
+```text
+1. Goal에 도착
+2. Maximum Step에 도달
+```
+
+Goal에 도착하면:
+
+```python
+done = True
+```
+
+가 되어 Episode가 종료된다.
+
+Goal에 도착하지 못하더라도:
+
+```text
+step = 50
+```
+
+이 되면:
+
+```text
+step < max_steps
+```
+
+조건이 False가 되어 반복문이 종료된다.
+
+---
+
+## Current Agent-Environment Flow
+
+현재 구조는 다음과 같다.
+
+```text
+Initialize State
+      ↓
+Random Agent
+      ↓
+Random Action
+      ↓
+Environment
+      ↓
+Boundary Check
+      ↓
+Next State
+      ↓
+Reward
+      ↓
+Goal Check
+      ↓
+done 확인
+      ↓
+False → 다시 Random Action 선택
+      ↓
+True 또는 Max Step → Episode 종료
+```
+
+이전 단계와 비교하면 중요한 변화가 있다.
+
+기존:
+
+```text
+State
+  ↓
+사람이 미리 정의한 Action
+  ↓
+Environment
+```
+
+현재:
+
+```text
+State
+  ↓
+Random Agent
+  ↓
+Action
+  ↓
+Environment
+```
+
+Agent가 Action을 선택하는 역할이 처음 등장하기 시작했다.
+
+---
+
+## RL Connection
+
+Random Agent는 아직 학습하지 않는다.
+
+하지만 이후 Q-Learning Agent는 현재 Random Action Selection 부분을 다음과 같이 발전시킨다.
+
+```text
+현재
+
+State
+  ↓
+Random Action
+```
+
+이후:
+
+```text
+State
+  ↓
+Q-Value 확인
+  ↓
+Action 선택
+```
+
+그리고 Exploration을 위해 일부 Action은 여전히 Random하게 선택하게 된다.
+
+따라서 현재 구현하는 Random Action은 이후 `epsilon-greedy` Policy의 Exploration과도 연결된다.
+
+---
+
+## Python Concepts
+
+이번 단계에서 새롭게 사용한 Python 문법과 개념:
+
+* `import`
+* `random`
+* `random.randint()`
+* Random Action
+* Random Policy
+* `and`
+* Multiple Conditions
+* `max_steps`
+* Episode Step Limit
+
+---
+
+## Next
+
+다음 단계에서는 Random Action 선택 부분을 함수로 분리한다.
+
+현재:
+
+```python
+action = random.randint(0, 3)
+```
+
+구조를 다음과 같이 변경한다.
+
+```python
+def select_action():
+    ...
+```
+
+이 과정에서 Python의 다음 개념을 학습한다.
+
+```text
+def
+함수
+parameter
+return
+```
+
+이를 통해 Agent의 Action Selection 역할을 별도의 코드로 분리하기 시작한다.

@@ -1,27 +1,27 @@
+import random
+
 print("Hello Reinforcement Learning")
 
 agent_position = [0, 0]
 goal_position = [3, 3]
 
-# Action
-# 0 = UP
-# 1 = DOWN
-# 2 = LEFT
-# 3 = RIGHT
-
-actions = [3, 3, 3, 1, 1, 1]
-
 done = False
 step = 0
 total_reward = 0
+max_steps = 50
 
 print("Start")
 print("Agent Position:", agent_position)
 print("Goal Position:", goal_position)
 
-while not done:
+while not done and step < max_steps:
 
-    action = actions[step]
+    # Random Action 선택
+    # 0 = UP
+    # 1 = DOWN
+    # 2 = LEFT
+    # 3 = RIGHT
+    action = random.randint(0, 3)
 
     reward = -1
 
@@ -58,3 +58,4 @@ while not done:
 
 print("Episode Finished")
 print("Total Reward:", total_reward)
+print("Total Steps:", step)
