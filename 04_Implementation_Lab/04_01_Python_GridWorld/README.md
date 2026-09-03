@@ -1890,3 +1890,378 @@ Episode Loop
 ```
 
 Agent와 Environment의 역할을 더 명확하게 분리하는 것이 다음 목표이다.
+
+## Environment Logic Refactoring
+
+이번 단계에서는 Episode Loop 내부에 있던 Environment 관련 로직을 함수로 분리한다.
+
+기존에는 `while` 내부에서 이동 처리, Boundary Check, Reward 계산, Goal Check를 모두 직접 수행했다.
+
+이제 각 역할을 별도의 함수로 나눈다.
+
+```text
+Agent
+  ↓
+select_action()
+
+Environment Transition
+  ↓
+move_agent()
+
+Reward / Termination
+  ↓
+check_goal()
+```
+
+---
+
+## move_agent()
+
+Agent의 현재 위치와 Action을 입력받아 다음 위치를 계산한다.
+
+```python
+def move_agent(position, action):
+
+    if action == 0:
+        if position[1] > 0:
+            position[1] -= 1
+
+    elif action == 1:
+        if position[1] < 3:
+            position[1] += 1
+
+    elif action == 2:
+        if position[0] > 0:
+            position[0] -= 1
+
+    elif action == 3:
+        if position[0] < 3:
+            position[0] += 1
+
+    return position
+```
+
+입력:
+
+```text
+position
+action
+```
+
+출력:
+
+```text
+next position
+```
+
+예를 들어:
+
+```text
+position = [0, 0]
+action = 3
+```
+
+이라면:
+
+```text
+[0, 0]
+   ↓ RIGHT
+[1, 0]
+```
+
+이 된다.
+
+Episode Loop에서는 다음과 같이 사용한다.
+
+```python
+agent_position = move_agent(agent_position, action)
+```
+
+이 코드는 다음 의미를 가진다.
+
+```text
+현재 State
+    ↓
+Action
+    ↓
+move_agent()
+    ↓
+Next State
+    ↓
+agent_position에 다시 저장
+```
+
+강화학습 관점에서는 다음 State Transition과 연결된다.
+
+```text
+S_t
+ ↓
+A_t
+ ↓
+Environment
+ ↓
+S_(t+1)
+```
+
+---
+
+## Function Parameters
+
+이번 단계에서는 함수에 여러 값을 입력으로 전달한다.
+
+```python
+def move_agent(position, action):
+```
+
+여기서:
+
+```text
+position
+action
+```
+
+은 함수의 Parameter이다.
+
+함수를 호출할 때 실제 값을 전달한다.
+
+```python
+move_agent(agent_position, action)
+```
+
+예를 들어:
+
+```text
+agent_position = [1, 2]
+action = 3
+```
+
+이라면 함수 내부에서는 개념적으로:
+
+```text
+position = [1, 2]
+action = 3
+```
+
+으로 사용된다.
+
+---
+
+## check_goal()
+
+Reward 계산과 Goal 도착 여부 확인도 함수로 분리한다.
+
+```python
+def check_goal(position, goal_position):
+
+    if position == goal_position:
+        reward = 10
+        done = True
+
+    else:
+        reward = -1
+        done = False
+
+    return reward, done
+```
+
+이 함수는 현재 Position과 Goal Position을 비교한다.
+
+Goal에 도착했다면:
+
+```text
+reward = 10
+done = True
+```
+
+Goal에 도착하지 않았다면:
+
+```text
+reward = -1
+done = False
+```
+
+를 반환한다.
+
+---
+
+## Multiple Return Values
+
+Python에서는 하나의 함수에서 여러 값을 반환할 수 있다.
+
+```python
+return reward, done
+```
+
+함수를 호출할 때도 두 개의 변수로 받을 수 있다.
+
+```python
+reward, done = check_goal(agent_position, goal_position)
+```
+
+예를 들어 함수에서 다음 값을 반환했다고 하자.
+
+```text
+reward = 10
+done = True
+```
+
+그러면:
+
+```python
+reward, done = check_goal(...)
+```
+
+실행 후:
+
+```text
+reward → 10
+done   → True
+```
+
+가 된다.
+
+---
+
+## Current Episode Loop
+
+함수 분리 이후 Episode Loop는 훨씬 단순해졌다.
+
+핵심 부분은 다음과 같다.
+
+```python
+while not done and step < max_steps:
+
+    action = select_action()
+
+    agent_position = move_agent(agent_position, action)
+
+    reward, done = check_goal(
+        agent_position,
+        goal_position
+    )
+
+    total_reward += reward
+
+    step += 1
+```
+
+각 코드의 역할은 다음과 같다.
+
+```text
+select_action()
+→ Agent가 행동을 선택
+
+move_agent()
+→ Environment가 Action에 따라 State 변경
+
+check_goal()
+→ Reward 및 Episode 종료 여부 결정
+```
+
+---
+
+## Agent and Environment Separation
+
+현재 구조는 다음과 같이 역할이 분리되어 있다.
+
+```text
+          Agent
+            │
+            ▼
+    select_action()
+            │
+          Action
+            │
+            ▼
+       Environment
+            │
+            ▼
+       move_agent()
+            │
+         Next State
+            │
+            ▼
+       check_goal()
+         ↙      ↘
+      Reward    done
+```
+
+아직 완전히 독립된 Environment 객체를 만든 것은 아니지만, Agent와 Environment의 책임을 분리하기 시작한 상태이다.
+
+---
+
+## RL Connection
+
+최종적으로 만들 RL Environment에서는 다음과 같은 형태를 사용하게 된다.
+
+```python
+next_state, reward, done = env.step(action)
+```
+
+현재 구현에서는 이 `step()` 내부에서 일어날 일을 각각 직접 구현하고 있다.
+
+```text
+env.step(action)
+      │
+      ├─ State Transition
+      │    → move_agent()
+      │
+      ├─ Reward Calculation
+      │    → check_goal()
+      │
+      └─ Episode Termination
+           → done
+```
+
+따라서 현재 함수 분리는 이후 `Environment.step()`을 구현하기 위한 중간 단계이다.
+
+---
+
+## Python Concepts
+
+이번 단계에서 새롭게 사용하거나 더 구체적으로 학습한 개념:
+
+* Function Parameter
+* 여러 Parameter 전달
+* Multiple Return Values
+* `return reward, done`
+* `reward, done = ...`
+* 함수 역할 분리
+* Agent / Environment 책임 분리
+* State Transition
+
+---
+
+## Next
+
+다음 단계에서는 현재 함수들을 더 정리하여 GridWorld Environment의 구조를 만든다.
+
+현재:
+
+```text
+select_action()
+move_agent()
+check_goal()
+```
+
+구조를 발전시켜 최종적으로 다음 형태를 목표로 한다.
+
+```python
+next_state, reward, done = step(action)
+```
+
+즉 Environment가 하나의 Action을 입력받으면:
+
+```text
+Action
+  ↓
+State Transition
+  ↓
+Reward
+  ↓
+done
+```
+
+을 한 번에 처리하도록 만든다.
+
+이 단계는 이후 `GridWorld` 클래스를 만들기 위한 직접적인 준비 과정이다.

@@ -6,6 +6,40 @@ def select_action():
     return action
 
 
+def move_agent(position, action):
+
+    if action == 0:
+        if position[1] > 0:
+            position[1] -= 1
+
+    elif action == 1:
+        if position[1] < 3:
+            position[1] += 1
+
+    elif action == 2:
+        if position[0] > 0:
+            position[0] -= 1
+
+    elif action == 3:
+        if position[0] < 3:
+            position[0] += 1
+
+    return position
+
+
+def check_goal(position, goal_position):
+
+    if position == goal_position:
+        reward = 10
+        done = True
+
+    else:
+        reward = -1
+        done = False
+
+    return reward, done
+
+
 print("Hello Reinforcement Learning")
 
 agent_position = [0, 0]
@@ -22,30 +56,11 @@ print("Goal Position:", goal_position)
 
 while not done and step < max_steps:
 
-    # Random Agent가 Action 선택
     action = select_action()
 
-    reward = -1
+    agent_position = move_agent(agent_position, action)
 
-    if action == 0:
-        if agent_position[1] > 0:
-            agent_position[1] -= 1
-
-    elif action == 1:
-        if agent_position[1] < 3:
-            agent_position[1] += 1
-
-    elif action == 2:
-        if agent_position[0] > 0:
-            agent_position[0] -= 1
-
-    elif action == 3:
-        if agent_position[0] < 3:
-            agent_position[0] += 1
-
-    if agent_position == goal_position:
-        reward = 10
-        done = True
+    reward, done = check_goal(agent_position, goal_position)
 
     total_reward += reward
 
