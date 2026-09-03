@@ -1,22 +1,19 @@
 print("Hello Reinforcement Learning")
 
-# Agent의 현재 위치
 agent_position = [0, 0]
-
-# Goal의 위치
 goal_position = [3, 3]
 
 print("Start")
 print("Agent Position:", agent_position)
 print("Goal Position:", goal_position)
 
-# Action 정의
+# Action
 # 0 = UP
 # 1 = DOWN
 # 2 = LEFT
 # 3 = RIGHT
 
-action = 1
+action = 3
 
 if action == 0:
     if agent_position[1] > 0:
@@ -34,5 +31,12 @@ elif action == 3:
     if agent_position[0] < 3:
         agent_position[0] += 1
 
+# Goal Check
+if agent_position == goal_position:
+    done = True
+else:
+    done = False
+
 print("Action:", action)
 print("Next Position:", agent_position)
+print("Done:", done)

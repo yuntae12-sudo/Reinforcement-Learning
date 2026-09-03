@@ -516,3 +516,232 @@ Goal Check
   ↓
 done = True / False
 ```
+
+## Goal Check
+
+Agent가 Goal에 도착했는지 확인한다.
+
+현재 Goal은 다음과 같이 정의되어 있다.
+
+```python
+goal_position = [3, 3]
+```
+
+Agent의 현재 위치가 Goal과 같다면 Episode를 종료할 수 있다.
+
+```python
+if agent_position == goal_position:
+    done = True
+else:
+    done = False
+```
+
+---
+
+## Boolean
+
+이번 단계에서는 Boolean 값을 사용한다.
+
+Boolean은 참과 거짓을 표현하는 자료형이다.
+
+```text
+True  = 참
+False = 거짓
+```
+
+예를 들어:
+
+```python
+done = True
+```
+
+는
+
+```text
+Episode가 종료되었다.
+```
+
+라는 의미로 사용할 수 있다.
+
+반대로:
+
+```python
+done = False
+```
+
+는
+
+```text
+Episode가 아직 종료되지 않았다.
+```
+
+라는 의미이다.
+
+---
+
+## done
+
+`done` 변수는 현재 Episode가 끝났는지를 나타낸다.
+
+```python
+if agent_position == goal_position:
+    done = True
+else:
+    done = False
+```
+
+예를 들어 현재 위치가:
+
+```text
+[2, 3]
+```
+
+이고 Action이 `RIGHT`라면:
+
+```text
+[2, 3]
+   ↓ RIGHT
+[3, 3]
+```
+
+Goal에 도착했으므로:
+
+```python
+done = True
+```
+
+가 된다.
+
+반대로 현재 위치가:
+
+```text
+[0, 0]
+```
+
+이고 `RIGHT`를 실행하면:
+
+```text
+[1, 0]
+```
+
+이므로 아직 Goal에 도착하지 않았다.
+
+```python
+done = False
+```
+
+---
+
+## Episode
+
+강화학습에서 Episode는 하나의 시작부터 종료 조건까지의 전체 과정이다.
+
+GridWorld에서는 다음과 같이 생각할 수 있다.
+
+```text
+Start
+[0, 0]
+
+    ↓
+
+Action
+
+    ↓
+
+Next State
+
+    ↓
+
+Action
+
+    ↓
+
+...
+
+    ↓
+
+Goal
+[3, 3]
+
+    ↓
+
+done = True
+
+    ↓
+
+Episode End
+```
+
+즉 Agent가 Goal에 도착하면 현재 Episode가 종료된다.
+
+---
+
+## Current Environment Flow
+
+현재까지 구현한 GridWorld의 흐름은 다음과 같다.
+
+```text
+State
+  ↓
+Action
+  ↓
+Boundary Check
+  ↓
+Next State
+  ↓
+Goal Check
+  ↓
+done
+```
+
+이 구조는 이후 실제 RL Environment의 다음 형태로 연결된다.
+
+```python
+next_state, reward, done = env.step(action)
+```
+
+현재는 `env.step()`을 사용하지 않고 내부에서 어떤 일이 발생하는지를 직접 구현하고 있다.
+
+---
+
+## Python Concepts
+
+이번 단계에서 새롭게 사용한 Python 문법과 개념:
+
+* Boolean
+* `True`
+* `False`
+* list 비교
+* Goal Check
+* `done`
+* Episode
+* Episode 종료 조건
+
+---
+
+## Next
+
+다음 단계에서는 Reward를 추가한다.
+
+예를 들어:
+
+```text
+일반 이동   = -1
+Goal 도착   = +10
+```
+
+이를 통해 Agent가 단순히 이동하는 것이 아니라, 어떤 행동이 더 좋은 결과를 만드는지 평가할 수 있게 한다.
+
+다음 구조로 확장한다.
+
+```text
+State
+  ↓
+Action
+  ↓
+Next State
+  ↓
+Reward
+  ↓
+done
+```
