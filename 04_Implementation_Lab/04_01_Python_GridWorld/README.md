@@ -958,3 +958,310 @@ done 확인
 ```
 
 이 단계부터 실제 강화학습의 Episode Loop 구조를 만들기 시작한다.
+
+## Episode Loop
+
+이번 단계에서는 Agent가 한 번만 움직이는 것이 아니라, Goal에 도착할 때까지 여러 Action을 연속으로 실행하도록 만든다.
+
+강화학습에서는 하나의 Episode가 여러 Step으로 구성된다.
+
+```text
+Start State
+    ↓
+Action
+    ↓
+Next State
+    ↓
+Reward
+    ↓
+done 확인
+    ↓
+False → 다음 Action
+    ↓
+...
+    ↓
+Goal 도착
+    ↓
+done = True
+    ↓
+Episode End
+```
+
+---
+
+## while
+
+Python의 `while`은 특정 조건이 참인 동안 코드를 반복해서 실행한다.
+
+```python
+while not done:
+```
+
+현재 `done = False`라면:
+
+```text
+not False = True
+```
+
+이므로 반복문이 계속 실행된다.
+
+Goal에 도착해서:
+
+```python
+done = True
+```
+
+가 되면:
+
+```text
+not True = False
+```
+
+가 되어 반복문이 종료된다.
+
+---
+
+## Predefined Action Sequence
+
+아직 RL Agent가 직접 Action을 선택하지 않기 때문에 이번 단계에서는 Action 순서를 미리 정의한다.
+
+```python
+actions = [3, 3, 3, 1, 1, 1]
+```
+
+Action 정의:
+
+```text
+0 = UP
+1 = DOWN
+2 = LEFT
+3 = RIGHT
+```
+
+따라서 위 Action sequence는 다음과 같다.
+
+```text
+RIGHT
+RIGHT
+RIGHT
+DOWN
+DOWN
+DOWN
+```
+
+시작점 `[0, 0]`에서 Goal `[3, 3]`까지 이동하는 경로이다.
+
+---
+
+## Step
+
+현재 몇 번째 Action을 실행하고 있는지 확인하기 위해 `step` 변수를 사용한다.
+
+```python
+step = 0
+```
+
+현재 Step에 해당하는 Action은 다음과 같이 가져온다.
+
+```python
+action = actions[step]
+```
+
+예를 들어:
+
+```python
+actions = [3, 3, 3, 1, 1, 1]
+step = 0
+```
+
+이면:
+
+```python
+actions[0]
+```
+
+이므로 Action은 `3 = RIGHT`이다.
+
+한 Step이 끝나면:
+
+```python
+step += 1
+```
+
+을 사용하여 다음 Action으로 이동한다.
+
+---
+
+## Total Reward
+
+한 Episode 동안 받은 Reward를 누적하기 위해 `total_reward`를 사용한다.
+
+```python
+total_reward = 0
+```
+
+각 Step에서 Reward를 받은 후:
+
+```python
+total_reward += reward
+```
+
+를 수행한다.
+
+이번 경로의 Reward는 다음과 같다.
+
+```text
+Step 0 → -1
+Step 1 → -1
+Step 2 → -1
+Step 3 → -1
+Step 4 → -1
+Step 5 → +10
+```
+
+따라서 Episode가 종료되면:
+
+```text
+Total Reward = 5
+```
+
+가 된다.
+
+---
+
+## Reward Accumulation
+
+현재 구현에서는 Reward를 단순하게 누적한다.
+
+```text
+Total Reward
+=
+r0 + r1 + r2 + ... + rT
+```
+
+이는 강화학습에서 Episode 동안 얻은 Return의 기본적인 형태와 연결된다.
+
+현재 단계에서는 Discount Factor `gamma`를 적용하지 않는다.
+
+이후 강화학습 알고리즘을 구현하면서 Discounted Return과 연결한다.
+
+---
+
+## Current RL Loop
+
+현재까지 구현한 GridWorld는 다음 구조를 가진다.
+
+```text
+Initialize State
+      ↓
+done = False
+      ↓
+while not done
+      ↓
+Action 선택
+      ↓
+Boundary Check
+      ↓
+Next State
+      ↓
+Reward
+      ↓
+Goal Check
+      ↓
+Total Reward 누적
+      ↓
+done 확인
+      ↓
+False → 다음 Step
+      ↓
+True → Episode 종료
+```
+
+이 구조는 이후 Q-Learning 등의 Training Loop에서도 기본적으로 유지된다.
+
+---
+
+## RL Connection
+
+실제 강화학습에서는 사람이 Action sequence를 미리 정하지 않는다.
+
+현재는:
+
+```python
+actions = [3, 3, 3, 1, 1, 1]
+```
+
+처럼 사람이 행동을 정하고 있지만, 이후에는 Agent가 현재 State를 보고 Action을 선택하게 된다.
+
+```text
+현재 단계
+
+State
+  ↓
+미리 정해진 Action
+  ↓
+Environment
+```
+
+이후:
+
+```text
+State
+  ↓
+RL Agent
+  ↓
+Action
+  ↓
+Environment
+```
+
+형태로 발전한다.
+
+---
+
+## Python Concepts
+
+이번 단계에서 새롭게 사용한 Python 문법과 개념:
+
+* `while`
+* `not`
+* 반복문
+* Action sequence
+* Step
+* `step += 1`
+* `total_reward`
+* Reward 누적
+* Episode Loop
+
+---
+
+## Next
+
+다음 단계에서는 사람이 Action sequence를 미리 정하지 않고 Random Agent가 Action을 선택하도록 만든다.
+
+예를 들어:
+
+```text
+0 = UP
+1 = DOWN
+2 = LEFT
+3 = RIGHT
+```
+
+중 하나를 무작위로 선택한다.
+
+구조는 다음과 같이 변경된다.
+
+```text
+State
+  ↓
+Random Agent
+  ↓
+Action
+  ↓
+Environment
+  ↓
+Next State / Reward / done
+```
+
+이를 통해 처음으로 Agent와 Environment의 역할을 분리하기 시작한다.
