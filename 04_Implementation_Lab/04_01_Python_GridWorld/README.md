@@ -2265,3 +2265,88 @@ done
 을 한 번에 처리하도록 만든다.
 
 이 단계는 이후 `GridWorld` 클래스를 만들기 위한 직접적인 준비 과정이다.
+
+
+## GridWorld Class
+
+마지막 단계에서는 지금까지 만든 Environment 로직을 `GridWorld` 클래스로 묶는다.
+
+```python
+class GridWorld:
+```
+
+클래스는 관련된 데이터와 함수를 하나의 객체로 묶기 위한 구조이다.
+
+GridWorld Environment는 다음 데이터를 가진다.
+
+```text
+agent_position
+goal_position
+```
+
+그리고 다음 기능을 가진다.
+
+```text
+reset()
+step(action)
+```
+
+### **init**
+
+```python
+def __init__(self):
+    self.agent_position = [0, 0]
+    self.goal_position = [3, 3]
+```
+
+객체가 처음 생성될 때 실행되는 초기화 함수이다.
+
+### self
+
+`self`는 현재 GridWorld 객체 자기 자신을 의미한다.
+
+```python
+self.agent_position
+```
+
+은 현재 Environment가 가지고 있는 Agent 위치이다.
+
+### reset
+
+```python
+state = env.reset()
+```
+
+Episode를 시작할 때 Agent를 초기 위치로 되돌리고 초기 State를 반환한다.
+
+### step
+
+```python
+next_state, reward, done = env.step(action)
+```
+
+Action을 입력받아 다음 과정을 수행한다.
+
+```text
+Action
+  ↓
+State Transition
+  ↓
+Boundary Check
+  ↓
+Reward
+  ↓
+Goal Check
+  ↓
+Next State / Reward / Done
+```
+
+현재 GridWorld는 실제 강화학습 Environment의 기본 인터페이스인 다음 구조를 갖게 되었다.
+
+```python
+state = env.reset()
+
+next_state, reward, done = env.step(action)
+```
+
+이로써 04-01에서는 Python 기초와 RL Environment의 가장 기본적인 구조를 직접 구현했다.
