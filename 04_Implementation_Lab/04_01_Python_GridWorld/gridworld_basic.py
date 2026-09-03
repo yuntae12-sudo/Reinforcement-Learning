@@ -15,6 +15,9 @@ print("Goal Position:", goal_position)
 
 action = 3
 
+# 기본 Reward
+reward = -1
+
 if action == 0:
     if agent_position[1] > 0:
         agent_position[1] -= 1
@@ -33,10 +36,12 @@ elif action == 3:
 
 # Goal Check
 if agent_position == goal_position:
+    reward = 10
     done = True
 else:
     done = False
 
 print("Action:", action)
 print("Next Position:", agent_position)
+print("Reward:", reward)
 print("Done:", done)

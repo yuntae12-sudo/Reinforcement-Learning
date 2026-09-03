@@ -745,3 +745,216 @@ Reward
   ↓
 done
 ```
+
+## Reward
+
+이번 단계에서는 Agent의 행동 결과에 Reward를 추가한다.
+
+현재 Reward는 가장 단순하게 다음과 같이 정의한다.
+
+```text
+일반 이동 = -1
+Goal 도착 = +10
+```
+
+일반 이동에 `-1`을 주는 이유는 Agent가 불필요하게 많은 이동을 하지 않고, 가능한 한 짧은 경로로 Goal에 도착하도록 유도하기 위해서이다.
+
+---
+
+## Basic Reward
+
+기본 Reward는 다음과 같이 설정한다.
+
+```python
+reward = -1
+```
+
+즉 한 번 이동할 때마다 기본적으로 `-1`의 Reward를 받는다.
+
+---
+
+## Goal Reward
+
+Agent가 Goal에 도착하면 Reward를 `+10`으로 변경한다.
+
+```python
+if agent_position == goal_position:
+    reward = 10
+    done = True
+else:
+    done = False
+```
+
+예를 들어 현재 상태가
+
+```text
+[2, 3]
+```
+
+이고 Action이 `RIGHT`라면:
+
+```text
+[2, 3]
+   ↓ RIGHT
+[3, 3]
+```
+
+Goal에 도착하므로:
+
+```text
+Reward = +10
+done = True
+```
+
+가 된다.
+
+반대로 Goal에 도착하지 않았다면:
+
+```text
+Reward = -1
+done = False
+```
+
+가 된다.
+
+---
+
+## Reward Design
+
+강화학습에서 Reward는 Agent가 어떤 행동을 선호하도록 만들 것인지 정의하는 핵심 요소이다.
+
+현재 GridWorld에서는:
+
+```text
+짧은 경로
+    ↓
+적은 이동 횟수
+    ↓
+적은 -1 누적
+    ↓
+더 높은 Return
+```
+
+이 되도록 설계한다.
+
+예를 들어 두 경로가 있을 때:
+
+```text
+Path A
+6 step 만에 Goal 도착
+
+Path B
+12 step 만에 Goal 도착
+```
+
+두 경로 모두 Goal Reward는 같지만, Path B는 더 많은 이동 패널티를 받는다.
+
+따라서 Agent는 장기적으로 더 짧은 경로를 선호하도록 학습할 수 있다.
+
+---
+
+## Current Environment Flow
+
+현재까지 구현한 GridWorld의 흐름은 다음과 같다.
+
+```text
+State
+  ↓
+Action
+  ↓
+Boundary Check
+  ↓
+Next State
+  ↓
+Reward
+  ↓
+Goal Check
+  ↓
+done
+```
+
+이 구조는 실제 RL Environment의 다음 형태로 연결된다.
+
+```python
+next_state, reward, done = env.step(action)
+```
+
+현재는 `step()` 함수 없이 이 내부 동작을 직접 구현하고 있다.
+
+---
+
+## RL Connection
+
+강화학습 Agent의 목적은 단순히 Goal에 도착하는 것이 아니라 장기적으로 더 큰 Reward를 얻는 것이다.
+
+즉:
+
+```text
+State
+  ↓
+Action
+  ↓
+Reward
+  ↓
+다음 Action 선택
+  ↓
+...
+```
+
+과정을 반복하면서 어떤 행동이 더 좋은 결과를 만드는지 학습한다.
+
+이후 Frenet 기반 강화학습에서도 같은 원리를 사용하게 된다.
+
+예를 들어:
+
+```text
+Collision Risk       -
+Large Jerk           -
+Unnecessary Lane Change -
+Progress             +
+Target Speed         +
+Comfort              +
+```
+
+와 같이 Reward를 설계하여 원하는 주행 행동을 학습시킬 수 있다.
+
+---
+
+## Python Concepts
+
+이번 단계에서 새롭게 사용한 개념:
+
+* Reward
+* 기본 Reward
+* Goal Reward
+* Reward Design
+* 누적 보상
+* 행동 결과 평가
+
+---
+
+## Next
+
+다음 단계에서는 여러 Action을 연속으로 실행하기 위해 반복문을 사용한다.
+
+```python
+while not done:
+```
+
+형태를 사용하여 하나의 Episode가 종료될 때까지 다음 과정을 반복한다.
+
+```text
+State
+  ↓
+Action
+  ↓
+Next State
+  ↓
+Reward
+  ↓
+done 확인
+  ↓
+다시 Action
+```
+
+이 단계부터 실제 강화학습의 Episode Loop 구조를 만들기 시작한다.
