@@ -1577,3 +1577,316 @@ return
 ```
 
 이를 통해 Agent의 Action Selection 역할을 별도의 코드로 분리하기 시작한다.
+
+## Function
+
+이번 단계에서는 Random Action 선택 코드를 함수로 분리한다.
+
+기존에는 Episode Loop 내부에서 직접 다음 코드를 사용했다.
+
+```python
+action = random.randint(0, 3)
+```
+
+이제 Action 선택 역할을 별도의 함수로 분리한다.
+
+```python
+def select_action():
+    action = random.randint(0, 3)
+    return action
+```
+
+그리고 Episode Loop에서는 다음과 같이 호출한다.
+
+```python
+action = select_action()
+```
+
+---
+
+## def
+
+Python에서는 `def`를 사용하여 함수를 정의한다.
+
+```python
+def select_action():
+```
+
+의 의미는 다음과 같다.
+
+```text
+select_action이라는 이름의 함수를 만든다.
+```
+
+함수 내부의 코드는 들여쓰기를 사용하여 작성한다.
+
+```python
+def select_action():
+    action = random.randint(0, 3)
+    return action
+```
+
+---
+
+## Function Call
+
+함수를 실제로 실행하려면 함수 이름 뒤에 `()`를 붙인다.
+
+```python
+select_action()
+```
+
+현재 코드에서는 반환된 Action을 변수에 저장한다.
+
+```python
+action = select_action()
+```
+
+전체 흐름은 다음과 같다.
+
+```text
+select_action() 호출
+        ↓
+Random Action 생성
+        ↓
+return
+        ↓
+action 변수에 저장
+```
+
+---
+
+## return
+
+`return`은 함수 내부에서 만든 값을 함수 밖으로 전달한다.
+
+현재 함수:
+
+```python
+def select_action():
+    action = random.randint(0, 3)
+    return action
+```
+
+에서:
+
+```python
+return action
+```
+
+은 Random하게 선택된 Action 값을 함수 밖으로 전달한다.
+
+예를 들어 함수 내부에서 `3`이 선택되었다면:
+
+```text
+select_action()
+      ↓
+action = 3
+      ↓
+return 3
+      ↓
+Episode Loop의 action = 3
+```
+
+이 된다.
+
+---
+
+## Why Separate the Function?
+
+코드의 동작 자체는 이전 단계와 동일하다.
+
+하지만 역할이 분리되었다.
+
+기존:
+
+```text
+Episode Loop
+  ├─ Action 선택
+  ├─ 이동 처리
+  ├─ Reward 계산
+  └─ Goal Check
+```
+
+현재:
+
+```text
+Agent
+  └─ select_action()
+
+Episode Loop
+  ├─ Agent에게 Action 요청
+  ├─ 이동 처리
+  ├─ Reward 계산
+  └─ Goal Check
+```
+
+Action Selection을 별도의 함수로 분리하면서 Agent의 역할이 조금 더 명확해진다.
+
+---
+
+## RL Connection
+
+현재 Random Agent는 State를 사용하지 않는다.
+
+```python
+def select_action():
+```
+
+현재 State와 관계없이 Random Action을 선택한다.
+
+하지만 이후 Q-Learning Agent에서는 현재 State를 입력으로 사용하게 된다.
+
+```python
+def select_action(state):
+    ...
+    return action
+```
+
+구조적으로는 다음과 같이 발전한다.
+
+```text
+현재
+
+Random Agent
+     ↓
+select_action()
+     ↓
+Action
+```
+
+이후:
+
+```text
+State
+  ↓
+Q-Learning Agent
+  ↓
+select_action(state)
+  ↓
+Action
+```
+
+따라서 이번 함수 분리는 이후 학습 Agent를 구현하기 위한 기본 구조가 된다.
+
+---
+
+## Function Parameter
+
+현재 `select_action()` 함수에는 입력값이 없다.
+
+```python
+def select_action():
+```
+
+하지만 함수는 외부에서 값을 입력받을 수도 있다.
+
+예를 들어:
+
+```python
+def print_position(position):
+    print(position)
+```
+
+다음과 같이 값을 전달할 수 있다.
+
+```python
+print_position([1, 2])
+```
+
+여기서 `position`을 함수의 Parameter라고 한다.
+
+이 개념은 이후 다음 형태에서 사용하게 된다.
+
+```python
+select_action(state)
+```
+
+즉 Agent가 현재 State를 입력받아 Action을 선택하게 된다.
+
+---
+
+## Current Agent-Environment Flow
+
+현재 구조는 다음과 같다.
+
+```text
+Initialize State
+      ↓
+select_action()
+      ↓
+Random Action
+      ↓
+Environment
+      ↓
+Boundary Check
+      ↓
+Next State
+      ↓
+Reward
+      ↓
+Goal Check
+      ↓
+done
+```
+
+Agent의 Action Selection과 Environment의 State Transition 역할이 점점 분리되고 있다.
+
+---
+
+## Python Concepts
+
+이번 단계에서 새롭게 사용한 Python 문법과 개념:
+
+* `def`
+* Function
+* Function Call
+* `return`
+* Parameter의 기본 개념
+* 역할 분리
+* 코드 재사용
+
+---
+
+## Next
+
+다음 단계에서는 Environment의 이동 처리 로직도 함수로 분리한다.
+
+현재 Episode Loop 내부에 있는:
+
+```python
+if action == 0:
+    ...
+
+elif action == 1:
+    ...
+
+elif action == 2:
+    ...
+
+elif action == 3:
+    ...
+```
+
+부분을 다음과 같은 함수로 변경한다.
+
+```python
+def move_agent(position, action):
+    ...
+```
+
+이를 통해 구조를 다음과 같이 발전시킨다.
+
+```text
+Agent
+  ↓
+select_action()
+
+Environment
+  ↓
+move_agent()
+
+Episode Loop
+```
+
+Agent와 Environment의 역할을 더 명확하게 분리하는 것이 다음 목표이다.

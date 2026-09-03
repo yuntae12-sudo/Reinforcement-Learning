@@ -1,5 +1,11 @@
 import random
 
+
+def select_action():
+    action = random.randint(0, 3)
+    return action
+
+
 print("Hello Reinforcement Learning")
 
 agent_position = [0, 0]
@@ -16,12 +22,8 @@ print("Goal Position:", goal_position)
 
 while not done and step < max_steps:
 
-    # Random Action 선택
-    # 0 = UP
-    # 1 = DOWN
-    # 2 = LEFT
-    # 3 = RIGHT
-    action = random.randint(0, 3)
+    # Random Agent가 Action 선택
+    action = select_action()
 
     reward = -1
 
