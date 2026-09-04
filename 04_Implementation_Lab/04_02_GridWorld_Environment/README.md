@@ -64,3 +64,58 @@ Done
 ```
 
 현재 Agent는 Random Policy를 사용하지만, 이후 Q-Learning Agent로 교체하더라도 Environment 구조는 그대로 사용할 수 있다.
+
+## GridWorld 확장
+
+기본 Environment에 장애물과 matplotlib 시각화를 추가했다.
+
+### Obstacle
+
+```text
+S . . .
+. X . .
+. X . .
+. . . G
+```
+
+* Obstacle: `(1, 1)`, `(2, 1)`
+* 장애물과 충돌하면 Episode 종료
+
+### Reward
+
+* 일반 이동: `-1`
+* Goal 도착: `+10`
+* Obstacle 충돌: `-10`
+
+### Episode 종료 조건
+
+Episode는 다음 조건 중 하나를 만족하면 종료된다.
+
+1. Goal 도착
+2. Obstacle 충돌
+3. 최대 Step `50` 도달
+
+### Visualization
+
+`matplotlib`을 이용하여 GridWorld 상태를 실시간으로 확인할 수 있도록 구현했다.
+
+* Agent: 원
+* Goal: 별
+* Obstacle: 사각형
+* 현재 Step 표시
+
+Episode 종료 후 마지막 상태를 잠시 표시한 뒤 matplotlib 창도 자동으로 종료된다.
+
+### 강화학습 관점
+
+Reward 설계를 통해 Agent에게 직접 경로를 지정하지 않고,
+
+```text
+Goal 도착       → 보상
+일반 이동       → 작은 페널티
+Obstacle 충돌   → 큰 페널티
+```
+
+를 제공한다.
+
+향후 Q-Learning Agent는 이 Reward를 기반으로 충돌을 피하면서 Goal까지 이동하는 Policy를 학습하게 된다.

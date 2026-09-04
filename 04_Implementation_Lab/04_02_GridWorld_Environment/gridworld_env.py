@@ -1,5 +1,10 @@
 import random
 
+import matplotlib
+matplotlib.use("TkAgg")
+
+import matplotlib.pyplot as plt
+
 
 class GridWorldEnv:
 
@@ -9,6 +14,11 @@ class GridWorldEnv:
 
         self.start_state = (0, 0)
         self.goal_state = (3, 3)
+
+        self.obstacles = [
+            (1, 1),
+            (2, 1)
+        ]
 
         self.agent_state = self.start_state
 
@@ -50,7 +60,14 @@ class GridWorldEnv:
 
         return (row, col)
 
+    def check_collision(self, state):
+
+        return state in self.obstacles
+
     def calculate_reward(self, state):
+
+        if self.check_collision(state):
+            return -10
 
         if state == self.goal_state:
             return 10
@@ -59,7 +76,13 @@ class GridWorldEnv:
 
     def check_done(self, state):
 
-        return state == self.goal_state
+        if state == self.goal_state:
+            return True
+
+        if self.check_collision(state):
+            return True
+
+        return False
 
     def step(self, action):
 
@@ -78,7 +101,7 @@ class GridWorldEnv:
 
         return next_state, reward, done
 
-    def render(self):
+    def render_terminal(self):
 
         for row in range(self.rows):
 
@@ -94,6 +117,9 @@ class GridWorldEnv:
                 elif state == self.goal_state:
                     line += "G "
 
+                elif state in self.obstacles:
+                    line += "X "
+
                 else:
                     line += ". "
 
@@ -101,14 +127,68 @@ class GridWorldEnv:
 
         print()
 
+    def render(self):
+
+        plt.clf()
+
+        plt.xlim(-0.5, self.cols - 0.5)
+        plt.ylim(self.rows - 0.5, -0.5)
+
+        plt.xticks(range(self.cols))
+        plt.yticks(range(self.rows))
+
+        plt.grid(True)
+
+        agent_row, agent_col = self.agent_state
+        goal_row, goal_col = self.goal_state
+
+        plt.scatter(
+            agent_col,
+            agent_row,
+            s=300,
+            label="Agent"
+        )
+
+        plt.scatter(
+            goal_col,
+            goal_row,
+            s=300,
+            marker="*",
+            label="Goal"
+        )
+
+        for i, obstacle in enumerate(self.obstacles):
+
+            obstacle_row, obstacle_col = obstacle
+
+            plt.scatter(
+                obstacle_col,
+                obstacle_row,
+                s=300,
+                marker="s",
+                label="Obstacle" if i == 0 else None
+            )
+
+        plt.title(
+            f"GridWorld | Step: {self.current_step}/{self.max_steps}"
+        )
+
+        plt.legend()
+
+        plt.pause(0.3)
+
 
 if __name__ == "__main__":
+
+    plt.ion()
 
     env = GridWorldEnv()
 
     state = env.reset()
 
     done = False
+
+    total_reward = 0
 
     while not done:
 
@@ -118,12 +198,32 @@ if __name__ == "__main__":
 
         next_state, reward, done = env.step(action)
 
-        print("State:", state)
-        print("Action:", env.actions[action])
-        print("Reward:", reward)
-        print("Next State:", next_state)
-        print("Done:", done)
-        print()
+        total_reward += reward
+
+        print(
+            f"Step: {env.current_step} | "
+            f"State: {state} | "
+            f"Action: {env.actions[action]} | "
+            f"Reward: {reward} | "
+            f"Next State: {next_state}"
+        )
 
         state = next_state
 
+    env.render()
+
+    print()
+    print("Episode Finished")
+    print("Total Reward:", total_reward)
+
+    if env.agent_state == env.goal_state:
+        print("Result: SUCCESS")
+
+    elif env.check_collision(env.agent_state):
+        print("Result: COLLISION")
+
+    else:
+        print("Result: MAX STEP")
+
+    plt.pause(2)
+    plt.close()
