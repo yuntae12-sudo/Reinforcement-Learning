@@ -119,3 +119,120 @@ Obstacle 충돌   → 큰 페널티
 를 제공한다.
 
 향후 Q-Learning Agent는 이 Reward를 기반으로 충돌을 피하면서 Goal까지 이동하는 Policy를 학습하게 된다.
+
+
+## Random Agent 반복 실험
+
+GridWorld Environment가 정상적으로 동작하는지 확인하고, 향후 Q-Learning Agent와 비교하기 위한 기준 성능을 만들기 위해 Random Agent를 여러 Episode 반복 실행하도록 확장했다.
+
+### Multi-Episode 구조
+
+총 `100 Episode`를 반복 실행한다.
+
+```text
+Episode 1
+  ├── Step 1
+  ├── Step 2
+  └── ...
+
+Episode 2
+  ├── Step 1
+  └── ...
+
+...
+
+Episode 100
+```
+
+각 Episode가 시작될 때 `reset()`을 호출하여 Agent의 위치와 Step 수를 초기화한다.
+
+각 Step에서는 Random Policy를 사용한다.
+
+```python
+action = random.randint(0, 3)
+```
+
+따라서 현재 Agent는 State를 이용하여 행동을 판단하거나 학습하지 않고, 4개의 Action 중 하나를 무작위로 선택한다.
+
+### Episode 결과 기록
+
+각 Episode마다 다음 정보를 기록한다.
+
+* `Total Reward`
+* `Step 수`
+* `SUCCESS`
+* `COLLISION`
+* `MAX STEP`
+
+Episode 종료 후에는 전체 실험 결과를 이용하여 다음 값을 계산한다.
+
+* 전체 Episode 수
+* Goal 도착 횟수
+* Obstacle 충돌 횟수
+* Max Step 종료 횟수
+* Average Reward
+
+### Total Reward
+
+한 Episode 동안 받은 Reward를 누적하여 `Total Reward`를 계산한다.
+
+```python
+total_reward += reward
+```
+
+현재 Reward 구조는 다음과 같다.
+
+```text
+일반 이동       -1
+Goal 도착      +10
+Obstacle 충돌  -10
+```
+
+따라서 짧은 Step으로 Goal에 도착할수록 높은 Total Reward를 얻고, 충돌하거나 불필요하게 많은 Step을 사용하는 경우 낮은 Reward를 얻는다.
+
+### Reward Visualization
+
+100 Episode 실행 후 `matplotlib`을 이용하여 Episode별 Total Reward를 그래프로 표시한다.
+
+```text
+X축 : Episode
+Y축 : Total Reward
+```
+
+Random Agent는 학습을 하지 않기 때문에 Episode가 증가하더라도 Reward가 지속적으로 향상되는 경향은 나타나지 않는다.
+
+이 결과는 이후 구현할 Q-Learning Agent와 비교하기 위한 Baseline으로 사용한다.
+
+### 강화학습 관점
+
+현재 구조는 강화학습의 기본적인 반복 구조를 가진다.
+
+```text
+전체 학습
+│
+├── Episode
+│   │
+│   ├── State
+│   ├── Action
+│   ├── Reward
+│   ├── Next State
+│   └── ...
+│
+└── 다음 Episode
+```
+
+현재는 Random Policy를 사용하지만 이후 Q-Learning에서는 같은 Environment를 유지한 채,
+
+```text
+Random Action
+      ↓
+Q-Table 기반 Action 선택
+      ↓
+Q-Value Update
+      ↓
+Policy 개선
+```
+
+구조로 확장한다.
+
+이를 통해 Random Agent와 학습된 Q-Learning Agent의 Success Rate, Average Reward, Episode Reward 변화를 비교할 수 있다.
