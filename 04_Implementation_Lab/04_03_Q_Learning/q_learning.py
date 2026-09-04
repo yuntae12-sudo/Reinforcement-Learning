@@ -73,6 +73,16 @@ def choose_action(state):
 
 
 # =========================
+# Greedy Action Selection
+# =========================
+
+def choose_greedy_action(state):
+    q_values = q_table[state]
+
+    return q_values.index(max(q_values))
+
+
+# =========================
 # Q-Learning Update
 # =========================
 
@@ -84,6 +94,7 @@ def update_q_table(state, action, reward, next_state, done):
 
     else:
         next_max_q = max(q_table[next_state])
+
         target = reward + gamma * next_max_q
 
     new_q = current_q + alpha * (target - current_q)
@@ -121,7 +132,10 @@ def print_policy():
 
             else:
                 q_values = q_table[state]
-                best_action = q_values.index(max(q_values))
+
+                best_action = q_values.index(
+                    max(q_values)
+                )
 
                 print(
                     f" {action_symbols[best_action]} ",
@@ -129,6 +143,110 @@ def print_policy():
                 )
 
         print()
+
+
+# =========================
+# Greedy Policy 실제 주행
+# =========================
+
+def run_greedy_policy():
+    print("\nGreedy Policy Test")
+
+    state = env.reset()
+
+    print("Start:", state)
+
+    for step in range(max_steps):
+        action = choose_greedy_action(state)
+
+        next_state, reward, done = env.step(action)
+
+        print(
+            f"Step {step + 1}: "
+            f"{state} "
+            f"{action_symbols[action]} "
+            f"{next_state}"
+        )
+
+        state = next_state
+
+        if done:
+            print("Goal reached!")
+            return
+
+    print("Failed to reach goal.")
+
+
+# =========================
+# Random Agent 평가
+# =========================
+
+def evaluate_random_agent(num_tests):
+    success_count = 0
+    total_steps = 0
+
+    for _ in range(num_tests):
+        state = env.reset()
+
+        for step in range(max_steps):
+            action = random.randint(0, 3)
+
+            next_state, reward, done = env.step(action)
+
+            state = next_state
+
+            if done:
+                success_count += 1
+                total_steps += step + 1
+                break
+
+    if success_count > 0:
+        average_steps = total_steps / success_count
+
+    else:
+        average_steps = 0
+
+    success_rate = (
+        success_count / num_tests * 100
+    )
+
+    return success_rate, average_steps
+
+
+# =========================
+# Q-Learning Agent 평가
+# =========================
+
+def evaluate_q_learning_agent(num_tests):
+    success_count = 0
+    total_steps = 0
+
+    for _ in range(num_tests):
+        state = env.reset()
+
+        for step in range(max_steps):
+            action = choose_greedy_action(state)
+
+            next_state, reward, done = env.step(action)
+
+            state = next_state
+
+            if done:
+                success_count += 1
+                total_steps += step + 1
+                break
+
+    if success_count > 0:
+        average_steps = total_steps / success_count
+
+    else:
+        average_steps = 0
+
+    success_rate = (
+        success_count / num_tests * 100
+    )
+
+    return success_rate, average_steps
 
 
 # =========================
@@ -140,13 +258,13 @@ for episode in range(num_episodes):
     total_reward = 0
 
     for step in range(max_steps):
-        # 1. 행동 선택
+        # 1. Action 선택
         action = choose_action(state)
 
         # 2. Environment와 상호작용
         next_state, reward, done = env.step(action)
 
-        # 3. Q-Table 업데이트
+        # 3. Q-Learning
         update_q_table(
             state,
             action,
@@ -155,13 +273,13 @@ for episode in range(num_episodes):
             done
         )
 
-        # 4. 다음 State로 이동
+        # 4. 다음 State
         state = next_state
 
         # 5. Reward 누적
         total_reward += reward
 
-        # 6. Goal 도착 시 Episode 종료
+        # 6. Episode 종료
         if done:
             break
 
@@ -173,7 +291,7 @@ for episode in range(num_episodes):
 
 
 # =========================
-# Final Q-Table 출력
+# Final Q-Table
 # =========================
 
 print("\nFinal Q-Table")
@@ -183,7 +301,40 @@ for state, q_values in q_table.items():
 
 
 # =========================
-# Learned Policy 출력
+# Learned Policy
 # =========================
 
 print_policy()
+
+
+# =========================
+# Greedy Policy Test
+# =========================
+
+run_greedy_policy()
+
+
+# =========================
+# Random vs Q-Learning
+# =========================
+
+num_tests = 100
+
+random_success, random_steps = (
+    evaluate_random_agent(num_tests)
+)
+
+q_success, q_steps = (
+    evaluate_q_learning_agent(num_tests)
+)
+
+
+print("\nEvaluation Result")
+
+print("\nRandom Agent")
+print(f"Success Rate: {random_success:.1f}%")
+print(f"Average Steps: {random_steps:.2f}")
+
+print("\nQ-Learning Agent")
+print(f"Success Rate: {q_success:.1f}%")
+print(f"Average Steps: {q_steps:.2f}")
